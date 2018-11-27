@@ -1,0 +1,79 @@
+{
+    "apiVersion": "machinelearning.seldon.io/v1alpha2",
+    "kind": "SeldonDeployment",
+    "metadata": {
+        "labels": {
+            "app": "seldon"
+        },
+        "name": "resnet"
+    },
+    "spec": {
+        "annotations": {
+            "project_name": "Tensorflow RESNET",
+            "deployment_version": "v1"
+        },
+        "name": "resnet",
+        "oauth_key": "oauth-key",
+        "oauth_secret": "oauth-secret",
+        "predictors": [
+            {
+                "componentSpecs": [{
+                    "spec": {
+                        "containers": [
+                            {
+                                "image": "gcr.io/constant-cubist-173123/inference_server/seldon-tf-resnet_model:v24",
+                                "env": [
+                                    {
+                                        "name": "MODEL_NAME",
+                                        "value": "Resnet"
+                                    },
+                                    {
+                                        "name": "API_TYPE",
+                                        "value": "GRPC"
+                                    }
+                                ],
+                                "imagePullPolicy": "IfNotPresent",
+                                "name": "classifier",
+                                "resources": {
+                                    "requests": {
+                                        "memory": "1Mi"
+                                    }
+                                },
+                                "volumeMounts": [
+                                   {
+                                       "name": "nfs",
+                                       "mountPath": "/model"
+                                   }
+                                ]
+                            }
+                        ],
+                        "volumes": [
+                            {
+                                "name": "nfs",
+                                "volumeSource" : {
+                                    "persistentVolumeClaim": {
+                                        "claimName": "nfs"
+                                    }
+                                }
+                            }
+                        ],
+                        "terminationGracePeriodSeconds": 20
+                    }
+                }],
+                "graph": {
+                    "children": [],
+                    "name": "classifier",
+                    "endpoint": {
+			"type" : "GRPC"
+		    },
+                    "type": "MODEL"
+                },
+                "name": "single-model",
+                "replicas": 1,
+		"annotations": {
+		    "predictor_version" : "v1"
+		}
+            }
+        ]
+    }
+}
